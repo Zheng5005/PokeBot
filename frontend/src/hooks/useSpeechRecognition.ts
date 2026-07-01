@@ -2,12 +2,15 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { isCancel } from 'axios';
 import { sendChatPrompt, fetchPokemonInfo, comparePokemons, saveFavoritePokemon } from '../services/chat';
 import { speak } from '../services/speech';
+import { getLangCode } from '../i18n/locales';
+import { useI18n } from '../i18n/I18nContext';
 
 interface UseSpeechRecognitionOptions {
   onTurnComplete?: (userText: string, botText: string) => void;
 }
 
 export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
+  const { lang, t } = useI18n();
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -21,18 +24,30 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
     onTurnCompleteRef.current = options?.onTurnComplete;
   });
 
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  });
+
+  const langRef = useRef(lang);
+  useEffect(() => {
+    langRef.current = lang;
+  });
+
   const processVoiceCommand = useCallback(async (text: string) => {
     const requestId = ++requestIdRef.current;
+    const currentT = tRef.current;
+    const currentLang = langRef.current;
 
     abortControllerRef.current?.abort();
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     setIsProcessing(true);
-    setResponseMsg('Pensando...');
+    setResponseMsg(currentT.speech.thinking);
 
     try {
-      const data = await sendChatPrompt(text, controller.signal);
+      const data = await sendChatPrompt(text, currentLang, controller.signal);
       if (requestId !== requestIdRef.current) return;
 
       let finalSpeech = data.reply;
@@ -41,10 +56,10 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
         try {
           const info = await fetchPokemonInfo(data.pokemon, controller.signal);
           if (requestId !== requestIdRef.current) return;
-          finalSpeech = `¡Encontré a ${data.pokemon}! Es de tipo ${info.type} y pesa ${info.weightKg} kilos.`;
+          finalSpeech = currentT.speech.searchFound(data.pokemon, info.type, info.weightKg);
         } catch {
           if (requestId !== requestIdRef.current) return;
-          finalSpeech = `Lo siento, no pude encontrar información sobre el pokémon ${data.pokemon}.`;
+          finalSpeech = currentT.speech.searchNotFound(data.pokemon);
         }
       }
 
@@ -58,10 +73,10 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
           const detail = results
             .map((r) => `${r.name} con ${r.info.baseStatTotal} puntos base`)
             .join(', ');
-          finalSpeech = `Comparé ${detail}. El mejor es ${winner.name} con un total de ${winner.info.baseStatTotal} puntos base.`;
+          finalSpeech = currentT.speech.compareResult(detail, winner.name, winner.info.baseStatTotal);
         } catch {
           if (requestId !== requestIdRef.current) return;
-          finalSpeech = `Lo siento, no pude comparar esos pokémon. Verificá que los nombres sean correctos.`;
+          finalSpeech = currentT.speech.compareError;
         }
       }
 
@@ -69,32 +84,32 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
         try {
           await saveFavoritePokemon(data.pokemon);
           if (requestId !== requestIdRef.current) return;
-          finalSpeech = `¡Listo! He registrado a ${data.pokemon} como tu favorito exitosamente.`;
+          finalSpeech = currentT.speech.saveSuccess(data.pokemon);
         } catch {
           if (requestId !== requestIdRef.current) return;
-          finalSpeech = `Hubo un error al intentar registrar a ${data.pokemon}.`;
+          finalSpeech = currentT.speech.saveError(data.pokemon);
         }
       }
 
       setResponseMsg(finalSpeech);
-      speak(finalSpeech);
+      speak(finalSpeech, currentLang);
       onTurnCompleteRef.current?.(text, finalSpeech);
       setIsProcessing(false);
     } catch (error) {
       if (requestId !== requestIdRef.current) return;
 
       if (isCancel(error)) {
-        const cancelMsg = 'Comando cancelado.';
+        const cancelMsg = tRef.current.speech.cancelled;
         setResponseMsg(cancelMsg);
-        speak(cancelMsg);
+        speak(cancelMsg, langRef.current);
         setIsProcessing(false);
         return;
       }
 
       console.error(error);
-      const errorMsg = 'Error al procesar el comando.';
+      const errorMsg = tRef.current.speech.error;
       setResponseMsg(errorMsg);
-      speak(errorMsg);
+      speak(errorMsg, langRef.current);
       setIsProcessing(false);
     }
   }, []);
@@ -116,7 +131,7 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
 
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
-    recognition.lang = 'es-ES';
+    recognition.lang = getLangCode(lang);
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const text = event.results[0][0].transcript;
@@ -132,7 +147,7 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
       recognition.abort();
       recognitionRef.current = null;
     };
-  }, []);
+  }, [lang]);
 
   const toggleListen = useCallback(() => {
     if (isListening) {

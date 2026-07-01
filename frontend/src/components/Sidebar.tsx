@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { type Conversation } from '../services/storage';
 import { ContextMenu, type ContextMenuItem } from './ContextMenu';
+import { useI18n } from '../i18n/I18nContext';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ export function Sidebar({
   onRename,
   onDelete,
 }: SidebarProps) {
+  const { t } = useI18n();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; convId: string } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -44,7 +46,7 @@ export function Sidebar({
   const menuItems: ContextMenuItem[] = contextMenu
     ? [
         {
-          label: '✏️ Editar título',
+          label: t.sidebar.editLabel,
           onClick: () => {
             const conv = conversations.find((c) => c.id === contextMenu.convId);
             if (conv) {
@@ -54,7 +56,7 @@ export function Sidebar({
           },
         },
         {
-          label: '🗑️ Eliminar',
+          label: t.sidebar.deleteLabel,
           onClick: () => onDelete(contextMenu.convId),
         },
       ]
@@ -75,21 +77,21 @@ export function Sidebar({
 
   return (
     <>
-      <button className="hamburger" onClick={onToggle} aria-label="Toggle sidebar">
+      <button className="hamburger" onClick={onToggle} aria-label={t.sidebar.toggleLabel}>
         ☰
       </button>
 
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <h2>Conversaciones</h2>
+          <h2>{t.sidebar.title}</h2>
           <button className="new-conv-btn" onClick={onNewConversation}>
-            + Nueva
+            {t.sidebar.newBtn}
           </button>
         </div>
 
         <nav className="sidebar-list">
           {conversations.length === 0 && (
-            <p className="sidebar-empty">Todavía no hay conversaciones guardadas.</p>
+            <p className="sidebar-empty">{t.sidebar.empty}</p>
           )}
 
           {conversations.map((conv) => (

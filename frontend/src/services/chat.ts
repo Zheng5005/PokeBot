@@ -11,8 +11,8 @@ export interface ChatResponse {
   pokemons?: string[];
 }
 
-export async function sendChatPrompt(prompt: string, signal?: AbortSignal): Promise<ChatResponse> {
-  const { data } = await api.post<ChatResponse>('/chat', { prompt }, { signal });
+export async function sendChatPrompt(prompt: string, lang: string, signal?: AbortSignal): Promise<ChatResponse> {
+  const { data } = await api.post<ChatResponse>('/chat', { prompt, lang }, { signal });
   return data;
 }
 
