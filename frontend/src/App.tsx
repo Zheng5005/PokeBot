@@ -1,11 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useConversations } from './hooks/useConversations';
 import { Sidebar } from './components/Sidebar';
 import './App.css';
 
+type Theme = 'light' | 'dark';
+
+function getInitialTheme(): Theme {
+  const stored = localStorage.getItem('pokebot-theme');
+  if (stored === 'light' || stored === 'dark') return stored;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('pokebot-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+
   const { addTurn, saveActiveConversation, newConversation, loadConversation, deleteConversation, renameConversation, conversations, activeConversationId, turns } = useConversations();
 
   const { isListening, isProcessing, transcript, responseMsg, toggleListen, restoreTurn, cancelRequest } = useSpeechRecognition({
@@ -42,41 +59,68 @@ function App() {
       />
 
       <main className="main-content">
-        <h1>🎙️ PokeBot - Voice Assistant</h1>
-        <p>Pregúntame sobre un Pokémon o dime que guarde uno como favorito.</p>
-
         <button
-          className={`mic-button ${isListening ? 'listening' : ''}`}
-          onClick={toggleListen}
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label="Cambiar tema"
+          title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
         >
-          {isListening ? '🛑 Escuchando...' : '🎤 Hablar'}
+          {theme === 'dark' ? '☀' : '☾'}
         </button>
 
-        {isProcessing && <p className="status-thinking">Pensando...</p>}
+        <header className="app-header">
+          <div className="pokeball" aria-hidden="true" />
+          <h1 className="app-title">PokéBot</h1>
+          <p className="app-subtitle">
+            Preguntame sobre un Pokémon o decime que guarde uno como favorito.
+          </p>
+        </header>
 
-        <div className="output">
-          <section>
-            <h3>Tú dijiste:</h3>
-            <p><i>{transcript || "..."}</i></p>
-          </section>
-
-          <section>
-            <h3>PokeBot dice:</h3>
-            <p><b>{responseMsg || "..."}</b></p>
-          </section>
+        <div className="mic-wrap">
+          <button
+            className={`mic-button ${isListening ? 'listening' : ''}`}
+            onClick={toggleListen}
+            aria-label={isListening ? 'Detener' : 'Hablar'}
+          >
+            <span className="mic-icon" aria-hidden="true" />
+          </button>
+          <p className="mic-label">{isListening ? 'ESCUCHANDO…' : 'PRESIONÁ PARA HABLAR'}</p>
         </div>
 
         {isProcessing && (
-          <button className="cancel-btn" onClick={cancelRequest}>
-            ✖ Cancelar
-          </button>
+          <p className="status-thinking">
+            <span className="blink">▶</span> PENSANDO…
+          </p>
         )}
 
-        {hasUnsavedTurns && (
-          <button className="save-btn" onClick={saveActiveConversation}>
-            💾 Guardar conversación
-          </button>
-        )}
+        <div className="output">
+          <section className="pixel-box dialog dialog-user">
+            <h3 className="dialog-label">TÚ DIJISTE</h3>
+            <p className="dialog-text">{transcript || '…'}</p>
+          </section>
+
+          <section className="pixel-box dialog dialog-bot">
+            <h3 className="dialog-label">POKÉBOT DICE</h3>
+            <p className="dialog-text">
+              {responseMsg || '…'}
+              {!!responseMsg && <span className="dialog-caret">▼</span>}
+            </p>
+          </section>
+        </div>
+
+        <div className="action-row">
+          {isProcessing && (
+            <button className="pixel-btn danger" onClick={cancelRequest}>
+              ✖ CANCELAR
+            </button>
+          )}
+
+          {hasUnsavedTurns && (
+            <button className="pixel-btn blue" onClick={saveActiveConversation}>
+              ▣ GUARDAR
+            </button>
+          )}
+        </div>
       </main>
     </div>
   );
