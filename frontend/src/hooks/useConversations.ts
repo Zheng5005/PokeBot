@@ -61,6 +61,14 @@ export function useConversations() {
     return conv.turns.length > 0 ? conv.turns[conv.turns.length - 1] : undefined;
   }, []);
 
+  const renameConversation = useCallback((id: string, newTitle: string) => {
+    const conv = conversations.find((c) => c.id === id);
+    if (!conv) return;
+
+    saveConversation({ ...conv, title: newTitle });
+    setConversations(getConversations());
+  }, [conversations]);
+
   const deleteConversationAction = useCallback((id: string) => {
     deleteFromStorage(id);
     setConversations(getConversations());
@@ -80,6 +88,7 @@ export function useConversations() {
     saveActiveConversation,
     newConversation,
     loadConversation,
+    renameConversation,
     deleteConversation: deleteConversationAction,
   };
 }

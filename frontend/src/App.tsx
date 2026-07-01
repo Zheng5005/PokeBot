@@ -6,7 +6,7 @@ import './App.css';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { addTurn, saveActiveConversation, newConversation, loadConversation, deleteConversation, conversations, activeConversationId, turns } = useConversations();
+  const { addTurn, saveActiveConversation, newConversation, loadConversation, deleteConversation, renameConversation, conversations, activeConversationId, turns } = useConversations();
 
   const { isListening, isProcessing, transcript, responseMsg, toggleListen, restoreTurn, cancelRequest } = useSpeechRecognition({
     onTurnComplete: addTurn,
@@ -37,6 +37,7 @@ function App() {
         onToggle={() => setSidebarOpen((v) => !v)}
         onSelect={handleSelectConversation}
         onNewConversation={handleNewConversation}
+        onRename={renameConversation}
         onDelete={deleteConversation}
       />
 

@@ -93,6 +93,10 @@
   font-weight: 600;
 }
 
+.sidebar-item.editing {
+  padding: 6px 16px;
+}
+
 .sidebar-item-title {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -101,23 +105,13 @@
   margin-right: 8px;
 }
 
-.sidebar-item-delete {
-  background: none;
-  border: none;
-  cursor: pointer;
+.sidebar-item-input {
+  flex: 1;
   font-size: 14px;
-  padding: 2px 4px;
-  border-radius: 3px;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.sidebar-item:hover .sidebar-item-delete {
-  opacity: 1;
-}
-
-.sidebar-item-delete:hover {
-  background: #fcc;
+  padding: 4px 6px;
+  border: 1px solid #4895ff;
+  border-radius: 4px;
+  outline: none;
 }
 
 .sidebar-overlay {
