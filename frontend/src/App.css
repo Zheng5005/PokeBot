@@ -1,7 +1,15 @@
-.container {
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 0;
   text-align: center;
-  margin-top: 50px;
+  padding-top: 60px;
   font-family: sans-serif;
+  transition: margin-left 0.25s ease;
 }
 
 .mic-button {
@@ -21,4 +29,40 @@
 
 .output {
   margin-top: 30px;
+}
+
+.save-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  background: #4895ff;
+  color: white;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #3174d6;
+}
+
+.status-thinking {
+  color: #888;
+  font-style: italic;
+  margin-top: 16px;
+}
+
+.cancel-btn {
+  margin-top: 12px;
+  padding: 8px 18px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fafafa;
+  color: #c00;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #fcc;
 }
