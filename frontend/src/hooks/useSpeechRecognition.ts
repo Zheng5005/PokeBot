@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { isCancel } from 'axios';
-import { sendChatPrompt, fetchPokemonInfo, saveFavoritePokemon } from '../services/chat';
+import { sendChatPrompt, fetchPokemonInfo, comparePokemons, saveFavoritePokemon } from '../services/chat';
 import { speak } from '../services/speech';
 
 interface UseSpeechRecognitionOptions {
@@ -45,6 +45,23 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
         } catch {
           if (requestId !== requestIdRef.current) return;
           finalSpeech = `Lo siento, no pude encontrar información sobre el pokémon ${data.pokemon}.`;
+        }
+      }
+
+      if (data.intent === 'compare' && data.pokemons && data.pokemons.length >= 2) {
+        try {
+          const results = await comparePokemons(data.pokemons, controller.signal);
+          if (requestId !== requestIdRef.current) return;
+          const winner = results.reduce((best, curr) =>
+            curr.info.baseStatTotal > best.info.baseStatTotal ? curr : best,
+          );
+          const detail = results
+            .map((r) => `${r.name} con ${r.info.baseStatTotal} puntos base`)
+            .join(', ');
+          finalSpeech = `Comparé ${detail}. El mejor es ${winner.name} con un total de ${winner.info.baseStatTotal} puntos base.`;
+        } catch {
+          if (requestId !== requestIdRef.current) return;
+          finalSpeech = `Lo siento, no pude comparar esos pokémon. Verificá que los nombres sean correctos.`;
         }
       }
 

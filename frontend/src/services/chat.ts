@@ -8,6 +8,7 @@ export interface ChatResponse {
   reply: string;
   intent?: string;
   pokemon?: string;
+  pokemons?: string[];
 }
 
 export async function sendChatPrompt(prompt: string, signal?: AbortSignal): Promise<ChatResponse> {
@@ -18,6 +19,7 @@ export async function sendChatPrompt(prompt: string, signal?: AbortSignal): Prom
 export interface PokemonInfo {
   type: string;
   weightKg: number;
+  baseStatTotal: number;
 }
 
 export async function fetchPokemonInfo(name: string, signal?: AbortSignal): Promise<PokemonInfo> {
@@ -25,7 +27,25 @@ export async function fetchPokemonInfo(name: string, signal?: AbortSignal): Prom
   return {
     type: data.types[0].type.name,
     weightKg: data.weight / 10,
+    baseStatTotal: data.stats.reduce(
+      (sum: number, s: { base_stat: number }) => sum + s.base_stat,
+      0,
+    ),
   };
+}
+
+export interface PokemonComparison {
+  name: string;
+  info: PokemonInfo;
+}
+
+export async function comparePokemons(
+  names: string[],
+  signal?: AbortSignal,
+): Promise<PokemonComparison[]> {
+  return Promise.all(
+    names.map(async (name) => ({ name, info: await fetchPokemonInfo(name, signal) })),
+  );
 }
 
 export async function saveFavoritePokemon(name: string): Promise<void> {
