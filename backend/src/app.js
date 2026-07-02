@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { env } = require('./config/env');
@@ -27,6 +28,16 @@ function createApp() {
   /* ---------- Routes ---------- */
   app.use('/', healthRoutes);
   app.use('/api', apiRoutes);
+
+  /* ---------- Production: serve frontend build ---------- */
+  if (process.env.NODE_ENV === 'production') {
+    const distPath = path.join(__dirname, '../../frontend/dist');
+    app.use(express.static(distPath));
+
+    app.use((req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
 
   return app;
 }

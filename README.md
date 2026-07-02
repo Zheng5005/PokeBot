@@ -188,6 +188,42 @@ Fetches Smogon competitive data for a Pokémon in a given tier.
 }
 ```
 
+## Deploy to Render (single app)
+
+PokeBot can be deployed on Render as a single Web Service — the backend serves the built frontend as static files.
+
+### Steps
+
+1. Push the repo to GitHub.
+2. In [Render Dashboard](https://dashboard.render.com) → **New +** → **Web Service**.
+3. Connect your repository.
+4. Configure:
+   | Setting | Value |
+   |---|---|
+   | **Name** | `pokebot` (or any name) |
+   | **Environment** | `Node` |
+   | **Region** | Choose the closest |
+   | **Branch** | `main` (or your deploy branch) |
+   | **Build Command** | `npm run build` |
+   | **Start Command** | `npm run start` |
+   | **Plan** | Free or any |
+
+5. Add **Environment Variables**:
+   | Variable | Required | Description |
+   |---|---|---|
+   | `GEMINI_API_KEY` | Yes | Google Gemini API key |
+   | `VITE_PIPEDREAM_URL` | No | Pipedream webhook for saving favorites (optional) |
+
+   > `NODE_ENV` is set to `production` by Render automatically. `PORT` is assigned by Render.
+
+6. Click **Create Web Service**.
+
+Render will build (`npm run build`) and start (`npm run start`) the app. The frontend is served by the backend on the same domain — no separate static site needed.
+
+### Local development
+
+You still run frontend (`cd frontend && npm run dev`) and backend (`cd backend && npm run dev`) separately. The frontend dev server proxies API calls to `http://localhost:3001`.
+
 ## Running Tests
 
 ```bash
