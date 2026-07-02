@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isRateLimitError, MODEL_CHAIN } from './gemini.js';
+import { isRateLimitError, MODEL_CHAIN } from '../src/services/gemini/geminiService.js';
 
 describe('isRateLimitError', () => {
   it('detects error.status === 429', () => {

@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI, SchemaType } = require('@google/generative-ai');
+const { env } = require('../../config/env');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(env.geminiApiKey);
 
 /**
  * Fallback chain, ordered by preference (best quality first).
