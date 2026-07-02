@@ -39,6 +39,17 @@ export const en: Translations = {
       `Done! I've saved ${name} as your favorite successfully.`,
     saveError: (name) =>
       `There was an error trying to save ${name}.`,
+    competitiveFound: (info) => {
+      let msg = `In ${info.tier}, ${info.pokemon} typically runs ${info.item || 'an interesting set'}`;
+      if (info.moves) msg += ` with ${info.moves}`;
+      if (info.nature) msg += `. ${info.nature} nature`;
+      if (info.evs) msg += `, ${info.evs}`;
+      if (info.overview) msg += `. ${info.overview}`;
+      return msg;
+    },
+    competitiveNotFound: (pokemon, tier) =>
+      `I couldn't find ${pokemon} in the ${tier} format. Try a different Pokémon or tier.`,
+    competitiveError: 'There was an error fetching competitive data.',
   },
   lang: { es: 'ES', en: 'EN' },
 };

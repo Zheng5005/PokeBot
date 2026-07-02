@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { isCancel } from 'axios';
-import { sendChatPrompt, fetchPokemonInfo, comparePokemons, saveFavoritePokemon } from '../services/chat';
+import { sendChatPrompt, fetchPokemonInfo, comparePokemons, saveFavoritePokemon, fetchCompetitiveSet } from '../services/chat';
 import { speak } from '../services/speech';
 import { getLangCode } from '../i18n/locales';
 import { useI18n } from '../i18n/I18nContext';
@@ -77,6 +77,34 @@ export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
         } catch {
           if (requestId !== requestIdRef.current) return;
           finalSpeech = currentT.speech.compareError;
+        }
+      }
+
+      if (data.intent === 'competitive' && data.pokemon) {
+        try {
+          const comp = await fetchCompetitiveSet(data.pokemon, data.tier, controller.signal);
+          if (requestId !== requestIdRef.current) return;
+
+          if (comp.found && comp.sets && comp.sets.length > 0) {
+            const top = comp.sets[0];
+            const m = top.moveset;
+            const info = {
+              pokemon: comp.pokemon!,
+              tier: comp.tierUsed,
+              topSetName: top.name,
+              item: m.item as string | undefined,
+              moves: Array.isArray(m.moves) ? (m.moves as string[]).join(', ') : undefined,
+              nature: m.nature as string | undefined,
+              evs: m.evs ? Object.entries(m.evs as Record<string, number>).map(([k, v]) => `${v} ${k}`).join(', ') : undefined,
+              overview: comp.overview,
+            };
+            finalSpeech = currentT.speech.competitiveFound(info);
+          } else {
+            finalSpeech = currentT.speech.competitiveNotFound(data.pokemon, comp.tierUsed);
+          }
+        } catch {
+          if (requestId !== requestIdRef.current) return;
+          finalSpeech = currentT.speech.competitiveError;
         }
       }
 

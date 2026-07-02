@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 const { createModel } = require('./gemini');
 const { PROMPT_ES, PROMPT_EN } = require('./prompts');
-const { validateChatInput } = require('./src/middleware/validate');
+const { validateChatInput, validateCompetitiveInput } = require('./src/middleware/validate');
 
 const app = express();
 
@@ -46,6 +46,21 @@ app.post('/api/chat', validateChatInput, async (req, res) => {
       ? 'Error processing the request with Gemini'
       : 'Error procesando la solicitud con Gemini';
     res.status(500).json({ error: errorMsg });
+  }
+});
+
+/* ---------- Competitive ---------- */
+
+const { handleGetCompetitiveSet } = require('./src/competitive/competitiveTool');
+
+app.post('/api/competitive', validateCompetitiveInput, async (req, res) => {
+  try {
+    const { pokemon, tier } = req.body;
+    const result = await handleGetCompetitiveSet({ pokemon, tier });
+    res.json(result);
+  } catch (error) {
+    console.error(`[competitive] ${error}`);
+    res.status(500).json({ found: false, error: 'Error al consultar datos competitivos.' });
   }
 });
 

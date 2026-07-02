@@ -1,5 +1,16 @@
 export type Lang = 'es' | 'en';
 
+export interface CompetitiveInfo {
+  pokemon: string;
+  tier: string;
+  topSetName?: string;
+  item?: string;
+  moves?: string;
+  nature?: string;
+  evs?: string;
+  overview?: string;
+}
+
 interface SpeechTranslations {
   thinking: string;
   cancelled: string;
@@ -10,6 +21,9 @@ interface SpeechTranslations {
   compareError: string;
   saveSuccess: (name: string) => string;
   saveError: (name: string) => string;
+  competitiveFound: (info: CompetitiveInfo) => string;
+  competitiveNotFound: (pokemon: string, tier: string) => string;
+  competitiveError: string;
 }
 
 export interface Translations {

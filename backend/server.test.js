@@ -34,6 +34,24 @@ describe('POST /api/chat — validation', () => {
   });
 });
 
+describe('POST /api/competitive — validation', () => {
+  it('returns 400 when pokemon is missing', async () => {
+    const res = await request(app).post('/api/competitive').send({});
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('El campo "pokemon" es requerido y debe ser un texto no vacío.');
+  });
+
+  it('returns 400 when pokemon is empty', async () => {
+    const res = await request(app).post('/api/competitive').send({ pokemon: '' });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when pokemon exceeds max length', async () => {
+    const res = await request(app).post('/api/competitive').send({ pokemon: 'x'.repeat(1001) });
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('CORS', () => {
   it('sets Access-Control-Allow-Origin header', async () => {
     const res = await request(app)

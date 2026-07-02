@@ -9,6 +9,26 @@ export interface ChatResponse {
   intent?: string;
   pokemon?: string;
   pokemons?: string[];
+  tier?: string;
+}
+
+export interface CompetitiveMoveset {
+  name: string;
+  moveset: Record<string, unknown>;
+  description: string;
+}
+
+export interface CompetitiveSet {
+  found: boolean;
+  error?: string;
+  tierUsed: string;
+  tierFallback?: boolean;
+  tierFallbackReason?: string | null;
+  speciesMatchedExactly?: boolean;
+  pokemon?: string;
+  overview?: string;
+  sets?: CompetitiveMoveset[];
+  outdated?: boolean;
 }
 
 export async function sendChatPrompt(prompt: string, lang: string, signal?: AbortSignal): Promise<ChatResponse> {
@@ -56,4 +76,13 @@ export async function saveFavoritePokemon(name: string): Promise<void> {
     pokemon: name,
     timestamp: new Date().toISOString(),
   });
+}
+
+export async function fetchCompetitiveSet(
+  pokemon: string,
+  tier?: string,
+  signal?: AbortSignal,
+): Promise<CompetitiveSet> {
+  const { data } = await api.post<CompetitiveSet>('/competitive', { pokemon, tier }, { signal });
+  return data;
 }

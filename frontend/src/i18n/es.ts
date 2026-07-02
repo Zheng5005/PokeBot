@@ -39,6 +39,17 @@ export const es: Translations = {
       `¡Listo! He registrado a ${name} como tu favorito exitosamente.`,
     saveError: (name) =>
       `Hubo un error al intentar registrar a ${name}.`,
+    competitiveFound: (info) => {
+      let msg = `En ${info.tier}, ${info.pokemon} usa ${info.item || 'un set interesante'}`;
+      if (info.moves) msg += ` con los movimientos ${info.moves}`;
+      if (info.nature) msg += `. Naturaleza ${info.nature}`;
+      if (info.evs) msg += `, ${info.evs}`;
+      if (info.overview) msg += `. ${info.overview}`;
+      return msg;
+    },
+    competitiveNotFound: (pokemon, tier) =>
+      `No encontré a ${pokemon} en el formato ${tier}. Probá con otro Pokémon o tier.`,
+    competitiveError: 'Hubo un error al consultar datos competitivos.',
   },
   lang: { es: 'ES', en: 'EN' },
 };

@@ -22,4 +22,18 @@ function validateChatInput(req, res, next) {
   next();
 }
 
-module.exports = { validateChatInput };
+function validateCompetitiveInput(req, res, next) {
+  const { pokemon } = req.body;
+
+  if (!pokemon || typeof pokemon !== 'string' || pokemon.trim().length === 0) {
+    return res.status(400).json({ error: 'El campo "pokemon" es requerido y debe ser un texto no vacío.' });
+  }
+
+  if (pokemon.length > MAX_PROMPT_LENGTH) {
+    return res.status(400).json({ error: `"pokemon" debe tener como máximo ${MAX_PROMPT_LENGTH} caracteres.` });
+  }
+
+  next();
+}
+
+module.exports = { validateChatInput, validateCompetitiveInput };

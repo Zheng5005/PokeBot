@@ -8,7 +8,7 @@ const responseSchema = {
     intent: {
       type: SchemaType.STRING,
       format: 'enum',
-      enum: ['search', 'save', 'compare', 'chat'],
+      enum: ['search', 'save', 'compare', 'competitive', 'chat'],
     },
     pokemon: { type: SchemaType.STRING, nullable: true },
     pokemons: {
@@ -16,6 +16,7 @@ const responseSchema = {
       items: { type: SchemaType.STRING },
       nullable: true,
     },
+    tier: { type: SchemaType.STRING, nullable: true },
     reply: { type: SchemaType.STRING },
   },
   required: ['intent', 'reply'],
