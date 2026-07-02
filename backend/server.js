@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
-const { createModel } = require('./gemini');
+const { generateWithFallback, AllModelsExhaustedError } = require('./gemini');
 const { PROMPT_ES, PROMPT_EN } = require('./prompts');
 const { validateChatInput, validateCompetitiveInput } = require('./src/middleware/validate');
 
@@ -33,14 +33,21 @@ app.post('/api/chat', validateChatInput, async (req, res) => {
     const { prompt, lang } = req.body;
     const systemInstruction = lang === 'en' ? PROMPT_EN(prompt) : PROMPT_ES(prompt);
 
-    const model = createModel();
+    const { text, modelUsed } = await generateWithFallback(systemInstruction);
+    console.log(`[chat] responded using model: ${modelUsed}`);
 
-    const result = await model.generateContent(systemInstruction);
-    const responseText = result.response.text().replace(/```json?/g, '').replace(/```/g, '').trim();
+    const responseText = text.replace(/```json?/g, '').replace(/```/g, '').trim();
     const jsonResponse = JSON.parse(responseText);
     res.json(jsonResponse);
 
   } catch (error) {
+    if (error instanceof AllModelsExhaustedError) {
+      console.error(`[chat] all models exhausted: ${error}`);
+      const msg = req.body?.lang === 'en'
+        ? 'PokeBot is resting right now (all models reached their daily limit). Please try again later.'
+        : 'PokeBot está descansando (todos los modelos llegaron a su límite diario). Probá de nuevo más tarde.';
+      return res.status(503).json({ error: msg });
+    }
     console.error(`[chat] ${error}`);
     const errorMsg = req.body?.lang === 'en'
       ? 'Error processing the request with Gemini'
